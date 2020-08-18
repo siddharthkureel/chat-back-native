@@ -1,0 +1,66 @@
+{
+    "user": [
+        {
+            "username": "joykureel@gmail.com",
+            "password": "P@ssw0rd",
+            "name": "Joy",
+            "id": 1000,
+            "type": "partner"
+        },
+        {
+            "username": "gurtej@gmail.com",
+            "password": "P@ssw0rd",
+            "name": "gurtej",
+            "id": 1006,
+            "type": "client",
+            "partnerId": 1000,
+            "linkId": 1002
+        },
+        {
+            "username": "karan@gmail.com",
+            "password": "P@ssw0rd",
+            "name": "karan",
+            "id": 1007,
+            "type": "client",
+            "partnerId": 1000,
+            "linkId": 1003
+        }
+    ],
+    "clients": [
+        {
+            "id": 1001,
+            "username": "joykureel@gmail.com",
+            "password": "P@ssw0rd",
+            "name": "Joy",
+            "userId": 1000
+        },
+        {
+            "id": 1002,
+            "username": "gurtej@gmail.com",
+            "password": "P@ssw0rd",
+            "name": "Gurtej",
+            "userId": 1000
+        },
+        {
+            "id": 1003,
+            "username": "karan@gmail.com",
+            "password": "P@ssw0rd",
+            "name": "Karan",
+            "userId": 1000
+        },
+        {
+            "id": 1004,
+            "username": "test1@gmail.com",
+            "password": "P@ssw0rd",
+            "name": "test1",
+            "userId": 1000
+        },
+        {
+            "id": 1005,
+            "username": "test2@gmail.com",
+            "password": "P@ssw0rd",
+            "name": "test2",
+            "userId": 1000
+        }
+    ]
+}
