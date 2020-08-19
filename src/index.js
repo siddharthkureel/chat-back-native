@@ -11,9 +11,7 @@ app.use(cors())
 
 const server = http.createServer(app)
 const io = socketio(server)
-
 const port = process.env.PORT || 3000
-
 app.use(Router)
 
 io.on('connection', (socket) => {
@@ -35,14 +33,13 @@ io.on('connection', (socket) => {
             isSent: true
         });
         await messages.save() 
-        
         io.to(chatroom).emit('message', { userId, content, chatroom })
         callback()
     })
  
 
-    // socket.on('disconnect', () => {
-    // })
+    socket.on('disconnect', () => {
+    })
 })
 
 server.listen(port, () => {

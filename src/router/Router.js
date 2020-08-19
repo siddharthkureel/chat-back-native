@@ -50,27 +50,13 @@ router.get('/messages/:id', async (req, res)=>{
         res.status(400).send(e)
     }
 })
-router.post('/messages', jsonParser, async (req, res)=>{
-    try {
-        const payload = (req.body);
-        const messages = new Messages({
-            ...payload
-        });
-        await messages.save() 
-        const find = await Messages.find({ chatroomId: payload.chatroomId }).exec();
-        res.status(200).send(find)
-        
-    } catch (e) {
-        console.log(e)
-        res.status(400).send(e)
-    }
-})
+
 router.post('/user',jsonParser, (req, res)=>{
     const { username, password } = req.body;
     User.forEach(user=>{
         if(user.username===username && user.password===password){
             const id = user.id;
-            let userClients;
+            let userClients; 
             if(user.type==='client'){
                 userClients = User.filter(item=>item.id===user.partnerId);
             } else {
