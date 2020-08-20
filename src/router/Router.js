@@ -8,7 +8,7 @@ const { user, clients } = require('../../db.json');
 const User = user;
 const Clients = clients;
 
-const Messages = require('../models/messages')
+const MessagesArray = require('../models/messageArray')
 const jsonParser = bodyParser.json()
 
 router.post('/chatroom', jsonParser, async (req, res)=>{
@@ -17,14 +17,9 @@ router.post('/chatroom', jsonParser, async (req, res)=>{
         let find = null;
         find = await Chatroom.findOne({ userId, clientId }).exec();
         if(find===null){
-            find = await Chatroom.findOne({ userId: clientId, clientId: userId }).exec();
-        } 
-        if(find===null){
             const data = {
-                id: randomNumber(2000, 3000),
                 userId,
-                clientId,
-                conversationId: randomNumber(3000,4000)
+                clientId
             }
             const chatroom = new Chatroom({
                 ...data
@@ -34,7 +29,6 @@ router.post('/chatroom', jsonParser, async (req, res)=>{
         }else{
             res.status(200).send(find);
         }
-        
     } catch (e) {
         res.status(400).send(e)
     }
@@ -42,9 +36,10 @@ router.post('/chatroom', jsonParser, async (req, res)=>{
 router.get('/messages/:id', async (req, res)=>{
     try {
         const id = (req.params.id) 
-        const find = await Messages.find({ chatroomId: id }).exec();
-        res.status(200).send(find)
-        
+        const find = await MessagesArray.find({ chatroomId: id }).exec();
+        const content = find.map(element => element.content)
+        const flat = content.flat(1)
+        res.status(200).send(flat)
     } catch (e) {
         console.log(e)
         res.status(400).send(e)
