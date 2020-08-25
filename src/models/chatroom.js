@@ -1,13 +1,14 @@
 const mongoose = require('mongoose')
+const { ObjectID } = require('mongodb')
 
 const chatroomSchema = new mongoose.Schema({
-    userId: {
-        type: Number,
+    userA: {
+        type: ObjectID,
         required: true,
         trim: true
     },
-    clientId: {
-        type: Number,
+    userB: {
+        type: ObjectID,
         required: true,
         trim: true
     }

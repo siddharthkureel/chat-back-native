@@ -4,7 +4,7 @@ const socketio = require('socket.io')
 const cors = require('cors')
 require('./db/mongoose')
 const Router = require('./router/Router')
-const Messages = require('./models/messages')
+const User = require('./models/user');
 const MessagesArray = require('./models/messageArray')
 
 const app = express()
@@ -16,19 +16,35 @@ const port = process.env.PORT || 3000
 app.use(Router)
 
 
-io.on('connection', (socket) => {
+io.on('connect', (socket) => {
+    let user;
+
+    socket.on('active', async ({ userId }, callback)=>{
+        user = userId;
+        try {
+            await User.updateOne({
+                "_id": userId
+            }, {
+                $set: {
+                    "active": true,
+                }
+            })
+            callback()
+        } catch (error) {
+            console.log(error)
+        }
+    })
     socket.on('join', (options, callback) => {
         const { chatroom } = options;
-
         socket.join(chatroom)
         callback()
     })
- 
+    
     socket.on('sendMessage', async (data, callback) => {
         try {
             const { userId, content, chatroom, createdAt } = data;
-            const find = await MessagesArray.findOne({chatroomId: chatroom, $where: 'this.content.length<20'})
-            if(find===null){
+            const find = await MessagesArray.findOne({ chatroomId: chatroom, $where: 'this.content.length<100' })
+            if(find === null){
                 const messages = new MessagesArray({
                     chatroomId: chatroom,
                     content: [
@@ -40,9 +56,9 @@ io.on('connection', (socket) => {
                         }
                     ]
                 });
-                await messages.save()
+                await messages.save();
             } else {
-                await MessagesArray.collection.update({
+                await MessagesArray.collection.updateOne({
                     "_id": find._id
                 }, {
                     $push: {
@@ -50,18 +66,29 @@ io.on('connection', (socket) => {
                     }
                 })
             }
-            io.to(chatroom).emit('message', data)
-            callback() 
+            io.to(chatroom).emit('message', data);
+            callback();
         } catch (error) {
-            console.log(error)
+            console.log(error);
         }
     })
 
-    socket.on('disconnect', async (reason) => {
-        console.log(reason)
+    socket.on('disconnect', async () => {
+        try {
+            await User.updateOne({
+                "_id": user
+            }, {
+                $set: {
+                    "active": false,
+                    "lastSeen": new Date()
+                }
+            })
+        } catch (error) {
+            console.log(error);
+        }
     })
 })
 
 server.listen(port, () => {
-    console.log(`Server is up on port ${port}!`)
+    console.log(`Server is up on port ${port}!`);
 })

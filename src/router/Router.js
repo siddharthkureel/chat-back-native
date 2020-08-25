@@ -1,31 +1,28 @@
 const express = require('express')
 const router = new express.Router()
 const bodyParser = require('body-parser')
+
 const Chatroom = require('../models/chatroom')
-
-const { randomNumber } = require('../utils/misc')
-const { user, clients } = require('../../db.json');
-const User = user;
-const Clients = clients;
-
+const User = require('../models/user');
 const MessagesArray = require('../models/messageArray')
 const jsonParser = bodyParser.json()
 
 router.post('/chatroom', jsonParser, async (req, res)=>{
     try {
-        const { userId, clientId } = req.body;
+        const { userA, userB } = req.body;
         let find = null;
-        find = await Chatroom.findOne({ userId, clientId }).exec();
+        find = await Chatroom.findOne({ userA, userB }).exec();
         if(find===null){
-            const data = {
-                userId,
-                clientId
+            try {
+                const chatroom = new Chatroom({
+                    userA,
+                    userB
+                })
+                await chatroom.save()
+                res.status(201).send(chatroom)
+            } catch (error) {
+                console.log(error)
             }
-            const chatroom = new Chatroom({
-                ...data
-            })
-            await chatroom.save()
-            res.status(201).send(chatroom)
         }else{
             res.status(200).send(find);
         }
@@ -33,6 +30,7 @@ router.post('/chatroom', jsonParser, async (req, res)=>{
         res.status(400).send(e)
     }
 })
+
 router.get('/messages/:id', async (req, res)=>{
     try {
         const id = (req.params.id) 
@@ -46,23 +44,53 @@ router.get('/messages/:id', async (req, res)=>{
     }
 })
 
-router.post('/user',jsonParser, (req, res)=>{
-    const { username, password } = req.body;
-    User.forEach(user=>{
-        if(user.username===username && user.password===password){
-            const id = user.id;
-            let userClients; 
-            if(user.type==='client'){
-                userClients = User.filter(item=>item.id===user.partnerId);
-            } else {
-                userClients = Clients.filter(client=>client.userId===id)
-            }
-            return res.send({
-               user,
-               userClients 
-            })
+router.post('/clients', jsonParser, async (req, res)=>{
+    try {
+        const { id, type, partnerId } = (req.body)
+        if(type==='client'){
+            const partner = await User.findOne({ _id: partnerId }).exec();
+            const array = [];
+            array.push(partner)
+            res.status(200).send(array)
         }
-    })
+        if(type==='partner'){
+            const clients = await User.find({ partnerId: id }).exec();
+            res.status(200).send(clients)
+        }
+    } catch (e) {
+        console.log(e)
+        res.status(400).send(e)
+    }
+})
+
+router.post('/signin', jsonParser, async(req, res)=>{
+    try {
+        const { username, password } = req.body;
+        const user = await User.findOne({ username, password });
+        res.status(200).send(user)
+    } catch (error) {
+        res.status(200).send(error)
+    }
+})
+
+router.post('/signup', jsonParser, async(req, res)=>{
+    const data = req.body;
+    try {
+        if(data.type==='client'){
+            const user = await User.findOne({ username: data.partner });
+            data.partnerId = user._id
+        }
+        const user = new User({
+            ...data,
+            active: true,
+            lastSeen: '',
+        })
+        await user.save()
+        res.status(201).send(user)
+    } catch (error) {
+        res.status(500).send(error)
+    }
+    
 })
 
 module.exports = router
